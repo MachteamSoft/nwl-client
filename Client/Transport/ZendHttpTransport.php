@@ -2,6 +2,9 @@
 
 namespace Mach\Bundle\NwlBundle\Client\Transport;
 
+use Zend\Http\Client;
+use Zend\Http\Response;
+
 /**
  * Zend_Http_Client based implementation of the Client interface
  *
@@ -11,12 +14,12 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
 {
 
     /**
-     * @var \Zend_Http_Client
+     * @var Client
      */
     protected $client;
 
     /**
-     * @var \Zend_Http_Response
+     * @var Response
      */
     protected $response = null;
 
@@ -32,7 +35,7 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
 
     public function __construct()
     {
-        $this->client = new \Zend_Http_Client();
+        $this->client = new Client();
     }
 
     public function addCookie($key, $val)
@@ -42,7 +45,7 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
             return $this;
         }
 
-        $this->client->setCookie($key, $val);
+        $this->client->addCookie($key, $val);
         return $this;
     }
 
@@ -52,7 +55,7 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
             throw new \LogicException(sprintf("%s is not a valid timeout", $timeout));
         }
 
-        $this->client->setConfig(array('timeout' => $timeout));
+        $this->client->setOptions(array('timeout' => $timeout));
 
         return $this;
     }
@@ -77,7 +80,7 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
     public function getResponseStatus()
     {
         $this->_getResponse();
-        return $this->response->getStatus();
+        return $this->response->getStatusCode();
     }
 
     public function setMethod($method)
@@ -123,7 +126,7 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
         } else {
             $this->client->setParameterGet($this->params);
         }
-        $response = $this->client->request();
+        $response = $this->client->send();
         $this->reset();
 
         $this->response = $response;
