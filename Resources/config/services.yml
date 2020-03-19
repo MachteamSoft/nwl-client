@@ -1,0 +1,71 @@
+services:
+    Mach\Bundle\NwlBundle\Command\EmailStatusSyncCommand:
+        class: Mach\Bundle\NwlBundle\Command\EmailStatusSyncCommand
+        tags:
+            - { name: 'console.command', command: 'emails:status-sync' }
+
+    nwl.http.client:
+        class: Mach\Bundle\NwlBundle\Client\Transport\ZendHttpTransport
+        public: false
+
+    nwl.debug.info:
+        class: Mach\Bundle\NwlBundle\Debug\DebugBacktrace
+        public: false
+
+    nwl.rest.client:
+        class: Mach\Bundle\NwlBundle\Client\Rest\RestClient
+        public: false
+        arguments: ["%nwl.rest.url%", "@nwl.http.client", "@nwl.debug.info"]
+        calls:
+          - [authenticate, ["%nwl.rest.user%", "%nwl.rest.password%"]]
+
+    nwl.client:
+        class: Mach\Bundle\NwlBundle\Client
+        arguments: ["@nwl.rest.client", "@logger", "@nwl.mail_interceptors.chain"]
+        tags:
+            - {name: monolog.logger, channel: nwl}
+
+    nwl:
+        alias: nwl.client
+
+    progressive_sender.factory:
+        class: Mach\Bundle\NwlBundle\Sender\Factory\ProgressiveSenderFactory
+        arguments: ["@nwl.client"]
+
+    nwl.progressive_sender.factory.interceptable:
+        class: Mach\Bundle\NwlBundle\Sender\Factory\InterceptableProgressiveSenderFactory
+        arguments: ["@progressive_sender.factory", "@nwl.mail_interceptors.chain"]
+
+    nwl.ip_controll_progressive_sender.factory.interceptable:
+        class: Mach\Bundle\NwlBundle\Sender\Factory\IPControllProgressiveSenderFactory
+        arguments: ["@nwl.progressive_volume_calculator", "@nwl.progressive_sender.factory.interceptable"]
+
+    nwl.ip_controll_progressive_sender.factory:
+        class: Mach\Bundle\NwlBundle\Sender\Factory\IPControllProgressiveSenderFactory
+        arguments: ["@nwl.progressive_volume_calculator", "@progressive_sender.factory" ]
+
+    nwl.repo.progressive_sender:
+        class: Mach\Bundle\NwlBundle\Repository\NwlsProgressiveSender
+        arguments: [ MachNwlBundle:NwlProgressiveSender ]
+        factory: ["@doctrine.orm.entity_manager", getRepository]
+
+    nwl.repo.mail_sendings:
+        class: Mach\Bundle\NwlBundle\Repository\NwlsMailSendings
+        arguments: [ MachNwlBundle:NwlMailSendings ]
+        factory: ["@doctrine.orm.entity_manager", getRepository]
+
+    nwl.repo.email_status:
+        class: Mach\Bundle\NwlBundle\Repository\EmailsStatus
+        arguments: [ MachNwlBundle:EmailStatus ]
+        factory: ["@doctrine.orm.entity_manager", getRepository]
+
+    nwl.progressive_volume_calculator:
+        class: Mach\Bundle\NwlBundle\ProgressiveVolumeCalculator
+        arguments: [ "@nwl.client", "@nwl.repo.progressive_sender", "@nwl.repo.mail_sendings"]
+
+    nwl.email_status_provider:
+        class: Mach\Bundle\NwlBundle\EmailStatus\EmailStatusBatchProvider
+
+    nwl.mail_interceptors.chain:
+        class: Mach\Bundle\NwlBundle\Mail\Interceptor\ChainInterceptor
+

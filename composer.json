@@ -1,0 +1,28 @@
+{
+    "name": "machteam/nwl-client",
+    "description": "Allows full interaction with Mach Newsletter System",
+    "keywords": ["mach","newsletter"],
+    "type": "symfony-bundle",
+    "authors": [
+        {
+            "name": "Catalin Costache",
+            "email": "catalin.costache@machteamsoft.ro"
+        },
+        {
+            "name": "Rares Vlasceanu",
+            "email": "rares.vlasceanu@machteamsoft.ro"
+        },
+        {
+            "name": "Marius Gherasie",
+            "email": "marius.gherasie@machteamsoft.ro"
+        }
+    ],
+    "require": {
+        "symfony/framework-bundle": "2.*",
+        "zend/framework": "1.*"
+    },
+    "autoload": {
+        "psr-0": { "Mach\\Bundle\\NwlBundle": "" }
+    },
+    "target-dir": "Mach/Bundle/NwlBundle"
+}
