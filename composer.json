@@ -18,8 +18,8 @@
         }
     ],
     "require": {
-        "symfony/framework-bundle": "5.*",
-        "zendframework/zend-http": "^2.11"
+        "symfony/framework-bundle": ">2.0",
+        "laminas/laminas-http": "^2.11"
     },
     "autoload": {
         "psr-0": { "Mach\\Bundle\\NwlBundle": "" }

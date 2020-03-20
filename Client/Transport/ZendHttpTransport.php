@@ -2,8 +2,8 @@
 
 namespace Mach\Bundle\NwlBundle\Client\Transport;
 
-use Zend\Http\Client;
-use Zend\Http\Response;
+use Laminas\Http\Client;
+use Laminas\Http\Response;
 
 /**
  * Zend_Http_Client based implementation of the Client interface
@@ -12,7 +12,6 @@ use Zend\Http\Response;
  */
 class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
 {
-
     /**
      * @var Client
      */
