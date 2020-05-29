@@ -19,21 +19,21 @@ class EmailStatus
     /**
      * @var boolean $badMail
      *
-     * @ORM\Column(name="bad_mail", type="tinyint", nullable=true, options={"unsigned":true})
+     * @ORM\Column(name="bad_mail", type="boolean", nullable=true)
      */
     protected $badMail;
 
     /**
      * @var boolean $unsubscribed
      *
-     * @ORM\Column(name="unsubscribed", type="tinyint", nullable=true, options={"unsigned":true})
+     * @ORM\Column(name="unsubscribed", type="boolean", nullable=true)
      */
     protected $unsubscribed;
 
     /**
      * @var boolean reportedSpam
      *
-     * @ORM\Column(name="reported_spam", type="tinyint", nullable=true, options={"unsigned":true})
+     * @ORM\Column(name="reported_spam", type="boolean", nullable=true)
      */
     protected $reportedSpam;
 
