@@ -1,9 +1,4 @@
 services:
-    Mach\Bundle\NwlBundle\Command\EmailStatusSyncCommand:
-        class: Mach\Bundle\NwlBundle\Command\EmailStatusSyncCommand
-        tags:
-            - { name: 'console.command', command: 'emails:status-sync' }
-
     nwl.http.client:
         class: Mach\Bundle\NwlBundle\Client\Transport\ZendHttpTransport
         public: false
