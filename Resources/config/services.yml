@@ -1,6 +1,7 @@
 services:
     nwl.http.client:
-        class: Mach\Bundle\NwlBundle\Client\Transport\ZendHttpTransport
+        class: Mach\Bundle\NwlBundle\Client\Transport\HttpClientTransport
+        arguments: ["@http_client"]
         public: false
 
     nwl.debug.info:

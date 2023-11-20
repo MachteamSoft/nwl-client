@@ -2,49 +2,36 @@
 
 namespace Mach\Bundle\NwlBundle\Client\Transport;
 
-use Laminas\Http\Client;
-use Laminas\Http\Response;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 
 /**
  * Zend_Http_Client based implementation of the Client interface
  *
  * @author Catalin Costache
  */
-class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
+class HttpClientTransport implements HttpProtocolInterface, HttpTransportInterface
 {
-    /**
-     * @var Client
-     */
     protected $client;
 
-    /**
-     * @var Response
-     */
     protected $response = null;
 
-    /**
-     * @var string
-     */
     protected $method = self::METHOD_GET;
 
-    /**
-     * @var array
-     */
     protected $params = array();
+    protected $uri;
+    protected $authBasic;
+    protected $fileUpload = array();
 
-    public function __construct()
+    public function __construct(HttpClientInterface $client)
     {
-        $this->client = new Client();
+        $this->client = $client;
     }
 
     public function addCookie($key, $val)
     {
-        $cookiesString = $this->client->getHeader('cookie');
-        if (strpos($cookiesString, sprintf('%s=', $key)) !== false) {
-            return $this;
-        }
-
-        $this->client->addCookie($key, $val);
+        $this->client->withOptions(array('headers' => array('Cookie' => new Cookie($key, $val))));
         return $this;
     }
 
@@ -53,15 +40,13 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
         if (empty($timeout) || !is_numeric($timeout)) {
             throw new \LogicException(sprintf("%s is not a valid timeout", $timeout));
         }
-
-        $this->client->setOptions(array('timeout' => $timeout));
-
+        $this->client->withOptions(array('timeout' => $timeout));
         return $this;
     }
 
     public function setAuthorization($user, $password = '')
     {
-        $this->client->setAuth($user, $password);
+        $this->authBasic = array($user, $password);
     }
 
     public function getResponseBody()
@@ -84,7 +69,6 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
 
     public function setMethod($method)
     {
-        $this->client->setMethod($method);
         $this->method = $method;
     }
 
@@ -99,19 +83,20 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
 
     public function setUri($uri)
     {
-        $this->client->setUri($uri);
+        $this->uri = $uri;
     }
 
     public function setFileUpload($filename, $formname, $data = null, $ctype = null)
     {
-        $this->client->setFileUpload($filename, $formname, $data, $ctype);
+        $this->client->withOptions(array('body' => array($formname => $data)));
     }
 
     public function reset()
     {
-        $this->client->resetParameters();
+        $this->request = null;
         $this->response = null;
         $this->params = array();
+        $this->fileUpload = null;
     }
 
     private function _getResponse()
@@ -119,13 +104,14 @@ class ZendHttpTransport implements HttpProtocolInterface, HttpTransportInterface
         if ($this->response) {
             return $this->response;
         }
-
+        $options = array('auth_basic' => $this->authBasic);
         if ($this->method == self::METHOD_POST) {
-            $this->client->setParameterPost($this->params);
+            $options['body'] = $this->params;
         } else {
-            $this->client->setParameterGet($this->params);
+            $options['query'] = $this->params;
+
         }
-        $response = $this->client->send();
+        $response = $this->client->request($this->method, $this->uri, $options);
         $this->reset();
 
         $this->response = $response;
