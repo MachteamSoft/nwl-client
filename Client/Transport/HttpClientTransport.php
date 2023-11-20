@@ -52,7 +52,7 @@ class HttpClientTransport implements HttpProtocolInterface, HttpTransportInterfa
     public function getResponseBody()
     {
         $this->_getResponse();
-        return $this->response->getBody();
+        return $this->response->getContent();
     }
 
     public function getResponseHeaders()
