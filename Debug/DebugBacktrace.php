@@ -49,6 +49,7 @@ class DebugBacktrace implements DebugInfo
         }
 
         unset($trace['args'], $trace['type']);
+        $trace['line'] = "{$trace['line']}";
 
         return $trace;
     }

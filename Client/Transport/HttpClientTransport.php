@@ -2,6 +2,8 @@
 
 namespace Mach\Bundle\NwlBundle\Client\Transport;
 
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 use Symfony\Component\HttpFoundation\Cookie;
@@ -88,7 +90,13 @@ class HttpClientTransport implements HttpProtocolInterface, HttpTransportInterfa
 
     public function setFileUpload($filename, $formname, $data = null, $ctype = null)
     {
-        $this->client->withOptions(array('body' => array($formname => $data)));
+        $this->fileUpload = [
+            'filename' => $filename,
+            'formname' => $formname,
+            'data' => $data,
+            'ctype' => $ctype,
+        ];
+        $this->params[$formname] = new DataPart($data, $filename);
     }
 
     public function reset()
@@ -105,11 +113,16 @@ class HttpClientTransport implements HttpProtocolInterface, HttpTransportInterfa
             return $this->response;
         }
         $options = array('auth_basic' => $this->authBasic);
-        if ($this->method == self::METHOD_POST) {
-            $options['body'] = $this->params;
-        } else {
+        if ($this->method !== self::METHOD_POST) {
             $options['query'] = $this->params;
-
+        } else {
+            if (empty($this->fileUpload)) {
+                $options['body'] = $this->params;
+            } else {
+                $formData = new FormDataPart($this->params);
+                $options['body'] = $formData->bodyToIterable();
+                $options['headers'] = $formData->getPreparedHeaders()->toArray();
+            }
         }
         $response = $this->client->request($this->method, $this->uri, $options);
         $this->reset();
