@@ -29,4 +29,16 @@ class Schedule extends AbstractResource
         return $this->performGet(array('id' => $id));
     }
 
+    public function post(string $nwlIdentifier, int $queryId, string $startDateTime, $type = 'oneTime', $cron = null, $endDate = null)
+    {
+        return $this->performPost(array(
+            'nwl' => $nwlIdentifier,
+            'query' => $queryId,
+            'startDateTime' => $startDateTime,
+            'type' => $type,
+            'cron' => $cron,
+            'endDate' => $endDate
+        ));
+    }
+
 }
